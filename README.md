@@ -8,7 +8,7 @@ This progam is basically just a popup dialog where you can select an emoji. It t
 Currently it will only work on GTK+ based desktop environments.
 
 ## How to install
-1. Make sure `python-gi` and `xdotool` is present an your system.
+1. Make sure `python3-gi` and `xdotool` is present an your system.
 ```
 sudo apt install python3-gi xdotool
 ```
@@ -29,7 +29,10 @@ This application uses the [emojione](http://emojione.com) artwork from Rick Moby
 * ~~Multicharacter emoji (i.e skin tone)~~
 * Get rid of the `ctrl+shift+u` keysequence and input emoji directly (xdotool can do this)
 * Improve UI
-  * Set focus to search field
+  * ~~Set focus to search field~~
+  * Use TAB to switch through controls
+  * Use RETURN as Ok
+  * Use ESC as Cancel
   * Display recently used emoji
   * User defined favorites
 * Find a better way to interface with libxdo

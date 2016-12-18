@@ -46,6 +46,7 @@ class EmojiSelector(Gtk.Dialog):
 
         self.filterEntry = Gtk.Entry()
         self.filterEntry.connect('changed', self.on_filter_entry_changed)
+        self.set_focus(self.filterEntry)
 
         vbox.pack_start(self.filterEntry, False, True, 0)
 
