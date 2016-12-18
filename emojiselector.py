@@ -9,10 +9,12 @@ import re
 from subprocess import check_output, run
 from time import sleep
 
-emojiStore = Gtk.ListStore(int, str, GdkPixbuf.Pixbuf, str)
+emojiStore = Gtk.ListStore(object, str, GdkPixbuf.Pixbuf, str)
 # emojiList = sorted(json.load(open('./emoji.json', 'r')), key=lambda k: k[0])
-for element in sorted(json.load(open('./emoji.json', 'r')), key=lambda k: k[0]):
-    emojiStore.append([int(element[0], base=16), element[1], GdkPixbuf.Pixbuf.new_from_file(element[2]), element[3]])
+# for element in sorted(json.load(open('./emoji.json', 'r')), key=lambda k: k[0]):
+for element in json.load(open('./emoji.json', 'r')):
+    emojiStore.append([element[0], element[1], GdkPixbuf.Pixbuf.new_from_file(element[2]), element[3]])
+    # emojiStore.append([int(element[0], base=16), element[1], GdkPixbuf.Pixbuf.new_from_file(element[2]), element[3]])
 emojiCategorys = json.load(open('./emoji-category.json'))
 emptyPic = GdkPixbuf.Pixbuf.new_from_bytes(GLib.Bytes([0] * (64*64*4)), 0, True, 8, 64, 64, 64*4)
 
@@ -106,7 +108,7 @@ class EmojiSelector(Gtk.Dialog):
             sel = self.categoryFilter[widget.get_selected_items()[0].get_indices()[0]]
             if self.selectedEmoji != sel[0]:
                 self.selectedEmoji = sel[0]
-                print('Selected Emoji: {}; {}'.format(hex(self.selectedEmoji), sel[1]))
+                print('Selected Emoji: {}; {}'.format(self.selectedEmoji, sel[1]))
 
 if __name__ == '__main__':
     focusedWindow = check_output(['xdotool', 'getwindowfocus']).decode().strip()
@@ -116,9 +118,10 @@ if __name__ == '__main__':
     result = win.run()
     keyToSend = win.selectedEmoji
     if result == Gtk.ResponseType.OK and keyToSend != None:
-        cmd = ['xdotool', 'key', 'ctrl+shift+u'] + list(hex(keyToSend).replace('0x', '')) + ['Return']
-        # print(['xdotool', 'key', 'ctrl+shift+u'] + list(hex(keyToSend).replace('0x', '')) + ['Return'])
-        run(['xdotool', 'windowfocus', focusedWindow])
-        # sleep(0.5)
-        run(cmd)
-        # run([u'xdotool', u'type', chr(keyToSend).encode('utf-8)')])
+        for k in keyToSend:
+            cmd = ['xdotool', 'key', 'ctrl+shift+u'] + list(hex(k).replace('0x', '')) + ['Return']
+            # print(['xdotool', 'key', 'ctrl+shift+u'] + list(hex(keyToSend).replace('0x', '')) + ['Return'])
+            run(['xdotool', 'windowfocus', focusedWindow])
+            # sleep(0.5)
+            run(cmd)
+            # run([u'xdotool', u'type', chr(keyToSend).encode('utf-8)')])
