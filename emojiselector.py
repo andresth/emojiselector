@@ -15,7 +15,7 @@ emojiStore = Gtk.ListStore(object, str, GdkPixbuf.Pixbuf, str)
 for element in json.load(open('./emoji.json', 'r')):
     emojiStore.append([element[0], element[1], GdkPixbuf.Pixbuf.new_from_file(element[2]), element[3]])
     # emojiStore.append([int(element[0], base=16), element[1], GdkPixbuf.Pixbuf.new_from_file(element[2]), element[3]])
-emojiCategorys = json.load(open('./emoji-category.json'))
+emojiCategorys = json.load(open('./category.json'))
 emptyPic = GdkPixbuf.Pixbuf.new_from_bytes(GLib.Bytes([0] * (64*64*4)), 0, True, 8, 64, 64, 64*4)
 
 def get_pixbuf_from_unicode(keycode):

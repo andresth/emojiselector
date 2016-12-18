@@ -38,4 +38,4 @@ for value in inList:
             if not value['category'] in outList:
                 outList.append(value['category'])
 
-# json.dump(outList, sys.stdout, indent=2)
+json.dump(outList, sys.stdout, indent=2)
