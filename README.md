@@ -26,9 +26,10 @@ Define a key sequence for the command ( i took `Super+F1`)
 This application uses the [emojione](http://emojione.com) artwork from Rick Moby.
 
 ## Todo
-* Multicharacter emoji (i.e skin tone)
+* ~~Multicharacter emoji (i.e skin tone)~~
 * Get rid of the `ctrl+shift+u` keysequence and input emoji directly (xdotool can do this)
 * Improve UI
   * Set focus to search field
   * Display recently used emoji
+  * User defined favorites
 * Find a better way to interface with libxdo
