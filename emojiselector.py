@@ -6,16 +6,15 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 import json
 import re
+import os.path
 from subprocess import check_output, run
 from time import sleep
 
 emojiStore = Gtk.ListStore(object, str, GdkPixbuf.Pixbuf, str)
-# emojiList = sorted(json.load(open('./emoji.json', 'r')), key=lambda k: k[0])
-# for element in sorted(json.load(open('./emoji.json', 'r')), key=lambda k: k[0]):
-for element in json.load(open('./emoji.json', 'r')):
-    emojiStore.append([element[0], element[1], GdkPixbuf.Pixbuf.new_from_file(element[2]), element[3]])
-    # emojiStore.append([int(element[0], base=16), element[1], GdkPixbuf.Pixbuf.new_from_file(element[2]), element[3]])
-emojiCategorys = json.load(open('./category.json'))
+modulePath = os.path.dirname(os.path.abspath(__file__))
+for element in json.load(open(os.path.join(modulePath, './emoji.json'), 'r')):
+    emojiStore.append([element[0], element[1], GdkPixbuf.Pixbuf.new_from_file(os.path.join(modulePath, element[2])), element[3]])
+emojiCategorys = json.load(open(os.path.join(modulePath, './category.json')))
 emptyPic = GdkPixbuf.Pixbuf.new_from_bytes(GLib.Bytes([0] * (64*64*4)), 0, True, 8, 64, 64, 64*4)
 
 def get_pixbuf_from_unicode(keycode):
@@ -24,17 +23,12 @@ def get_pixbuf_from_unicode(keycode):
             return elem[2]
     return emptyPic
 
-class EmojiSelector(Gtk.Dialog):
-    def __init__(self, parent, preselect=None, listview=False):
-        Gtk.Dialog.__init__(self, "Emoji Selector", parent, 0,
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-             Gtk.STOCK_OK, Gtk.ResponseType.OK))
-        self.set_default_size(520, 500)
+class EmojiSelectorBox(Gtk.Box):
+    def __init__(self, preselect=None):
+        super(Gtk.Box, self).__init__(orientation=Gtk.Orientation.VERTICAL, spacing=4)
 
         self.selectedEmoji = preselect
         self.selectedCategorys = []
-
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
 
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         for cat in emojiCategorys:
@@ -42,46 +36,29 @@ class EmojiSelector(Gtk.Dialog):
             btn.connect('clicked', self.on_category_button_clicked, cat)
             hbox.pack_start(btn, True, True, 0)
 
-        vbox.pack_start(hbox, False, True, 0)
+        self.pack_start(hbox, False, True, 0)
 
         self.filterEntry = Gtk.Entry()
         self.filterEntry.connect('changed', self.on_filter_entry_changed)
-        self.set_focus(self.filterEntry)
 
-        vbox.pack_start(self.filterEntry, False, True, 0)
+        self.pack_start(self.filterEntry, False, True, 0)
 
         self.categoryFilter = emojiStore.filter_new()
         self.categoryFilter.set_visible_func(self.category_filter_func)
 
-        if not listview:
-            emojiListView = Gtk.IconView.new_with_model(self.categoryFilter)
-            emojiListView.set_pixbuf_column(2)
-            emojiListView.set_selection_mode(Gtk.SelectionMode.BROWSE)
-            for i, value in enumerate(self.categoryFilter):
-                if value[0] == preselect:
-                    emojiListView.select_path(Gtk.TreePath.new_from_indices([i]))
-                    emojiListView.scroll_to_path(Gtk.TreePath.new_from_indices([i]), True, 0.5, 0.5)
-            emojiListView.connect('selection-changed', self.on_emoji_icon_selected)
-        else:
-            emojiListView = Gtk.TreeView.new_with_model(self.categoryFilter)
-            column = Gtk.TreeViewColumn('Emoji')
-            renderer = Gtk.CellRendererPixbuf()
-            column.pack_start(renderer, True)
-            column.add_attribute(renderer, 'pixbuf', 2)
-            renderer = Gtk.CellRendererText()
-            column.pack_start(renderer, True)
-            column.add_attribute(renderer, 'text', 1)
-            emojiListView.append_column(column)
-            emojiListView.set_headers_visible(False)
+        emojiListView = Gtk.IconView.new_with_model(self.categoryFilter)
+        emojiListView.set_pixbuf_column(2)
+        emojiListView.set_selection_mode(Gtk.SelectionMode.BROWSE)
+        for i, value in enumerate(self.categoryFilter):
+            if value[0] == preselect:
+                emojiListView.select_path(Gtk.TreePath.new_from_indices([i]))
+                emojiListView.scroll_to_path(Gtk.TreePath.new_from_indices([i]), True, 0.5, 0.5)
+        emojiListView.connect('selection-changed', self.on_emoji_icon_selected)
 
         scroll = Gtk.ScrolledWindow()
         scroll.add(emojiListView)
 
-        vbox.pack_start(scroll, True, True, 0)
-
-        box = self.get_content_area()
-        box.pack_start(vbox, True, True, 2)
-        self.show_all()
+        self.pack_start(scroll, True, True, 0)
 
     def on_category_button_clicked(self, widget, category):
         if widget.get_active():
@@ -111,13 +88,29 @@ class EmojiSelector(Gtk.Dialog):
                 self.selectedEmoji = sel[0]
                 print('Selected Emoji: {}; {}'.format(self.selectedEmoji, sel[1]))
 
+class EmojiSelectorDlg(Gtk.Dialog):
+    def __init__(self, parent, preselect=None, listview=False):
+        Gtk.Dialog.__init__(self, "Emoji Selector", parent, 0,
+            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        self.set_default_size(520, 500)
+
+        self.emojiBox = EmojiSelectorBox(preselect=preselect)
+        self.set_focus(self.emojiBox.filterEntry)
+
+        box = self.get_content_area()
+        box.pack_start(self.emojiBox, True, True, 2)
+        self.show_all()
+
+
 if __name__ == '__main__':
+    print(os.path.dirname(os.path.abspath(__file__)))
     focusedWindow = check_output(['xdotool', 'getwindowfocus']).decode().strip()
     print('Found {} Emoji'.format(len(emojiStore)))
-    win = EmojiSelector(None, listview=False, preselect=None)
+    win = EmojiSelectorDlg(None, preselect=None)
     # win.connect("delete-event", Gtk.main_quit)
     result = win.run()
-    keyToSend = win.selectedEmoji
+    keyToSend = win.emojiBox.selectedEmoji
     if result == Gtk.ResponseType.OK and keyToSend != None:
         for k in keyToSend:
             cmd = ['xdotool', 'key', 'ctrl+shift+u'] + list(hex(k).replace('0x', '')) + ['Return']
