@@ -27,16 +27,18 @@ class EmojiSelectorBox(Gtk.Box):
     def __init__(self, preselect=None):
         super(Gtk.Box, self).__init__(orientation=Gtk.Orientation.VERTICAL, spacing=4)
 
+        self.lockToggle = False
         self.selectedEmoji = preselect
         self.selectedCategorys = []
 
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        for cat in emojiCategorys:
-            btn = Gtk.ToggleButton(cat)
-            btn.connect('clicked', self.on_category_button_clicked, cat)
-            hbox.pack_start(btn, True, True, 0)
+        self.categoryBox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
-        self.pack_start(hbox, False, True, 0)
+        for catKey, catVal in emojiCategorys:
+            btn = Gtk.ToggleButton(catKey)
+            btn.connect('clicked', self.on_category_button_clicked, catVal)
+            self.categoryBox.pack_start(btn, True, True, 0)
+
+        self.pack_start(self.categoryBox, False, True, 0)
 
         self.filterEntry = Gtk.Entry()
         self.filterEntry.connect('changed', self.on_filter_entry_changed)
@@ -59,24 +61,29 @@ class EmojiSelectorBox(Gtk.Box):
                 emojiListView.scroll_to_path(Gtk.TreePath.new_from_indices([i]), True, 0.5, 0.5)
         emojiListView.connect('selection-changed', self.on_emoji_icon_selected)
 
+        for btn in self.categoryBox:
+            if btn.get_label() == 'All':
+                btn.set_active(True)
+
         scroll = Gtk.ScrolledWindow()
         scroll.add(emojiListView)
 
         self.pack_start(scroll, True, True, 0)
 
     def on_category_button_clicked(self, widget, category):
-        if widget.get_active():
-            if not category in self.selectedCategorys:
-                self.selectedCategorys.append(category)
-        else:
-            if category in self.selectedCategorys:
-                self.selectedCategorys.remove(category)
-        self.emojiFilter.refilter()
-        self.emojiSorter.set_model(self.emojiFilter)
-        self.emojiSorter.set_sort_column_id(-1, 0)
-        self.emojiSorter.set_sort_column_id(1, 0)
-        # self.emojiSorter.reorder()
-        # print(self.selectedCategorys)
+        if not self.lockToggle:
+            if not widget.get_active():
+                widget.set_active(True)
+            else:
+                self.lockToggle = True
+                for btn in self.categoryBox:
+                    if btn != widget:
+                        btn.set_active(False)
+                self.selectedCategorys = category
+                self.emojiFilter.refilter()
+                self.emojiSorter.set_sort_column_id(-1, 0)
+                self.emojiSorter.set_sort_column_id(1, 0)
+                self.lockToggle = False
 
     def on_filter_entry_changed(self, widget):
         print(self.filterEntry.get_text().split(' '))
@@ -89,7 +96,6 @@ class EmojiSelectorBox(Gtk.Box):
         for s in self.filterEntry.get_text().split(' '):
             s = re.sub(r'(\\)$', '', s)
             # textMatch = textMatch and re.findall('\\b' + s, model[iter][1], re.IGNORECASE)
-            # textMatch = textMatch and re.findall('\\b.{0,3}' + s + '|' + s + '.{0,3}\\b', model[iter][1], re.IGNORECASE)
             textMatch = textMatch and re.findall(s, model[iter][1], re.IGNORECASE)
         return (True if len(self.selectedCategorys) == 0 else model[iter][3] in self.selectedCategorys) and textMatch
 
