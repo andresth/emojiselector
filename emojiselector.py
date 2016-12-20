@@ -7,6 +7,7 @@ from gi.repository import Gtk, GdkPixbuf, GLib
 import json
 import re
 import os.path
+from argparse import ArgumentParser
 from subprocess import check_output, run
 from time import sleep
 
@@ -153,18 +154,20 @@ class EmojiSelectorDlg(Gtk.Dialog):
 
 
 if __name__ == '__main__':
-    print(os.path.dirname(os.path.abspath(__file__)))
+    parser = ArgumentParser(description='Emoji Selector.')
+    parser.add_argument('--unicode', dest='unicode', action='store_true', default=False)
+    args = parser.parse_args()
     focusedWindow = check_output(['xdotool', 'getwindowfocus']).decode().strip()
-    print('Found {} Emoji'.format(len(emojiStore)))
     win = EmojiSelectorDlg(None, preselect=None)
     # win.connect("delete-event", Gtk.main_quit)
     result = win.run()
     keyToSend = win.emojiBox.selectedEmoji
     if result == Gtk.ResponseType.OK and keyToSend != None:
         for k in keyToSend:
-            cmd = ['xdotool', 'key', 'ctrl+shift+u'] + list(hex(k).replace('0x', '')) + ['Return']
-            # print(['xdotool', 'key', 'ctrl+shift+u'] + list(hex(keyToSend).replace('0x', '')) + ['Return'])
             run(['xdotool', 'windowfocus', focusedWindow])
-            # sleep(0.5)
-            run(cmd)
-            # run([u'xdotool', u'type', chr(keyToSend).encode('utf-8)')])
+            if args.unicode:
+                sleep(1)
+                run(['xdotool', 'type', chr(k)])
+            else:
+                cmd = ['xdotool', 'key', 'ctrl+shift+u'] + list(hex(k).replace('0x', '')) + ['Return']
+                run(cmd)

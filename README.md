@@ -5,7 +5,6 @@ The intention is to provide an easy way to input emoji into any text entry field
 
 This progam is basically just a popup dialog where you can select an emoji. It then will instert the emoji by simulation keystrokes.
 
-Currently it will only work on GTK+ based desktop environments.
 
 ## How to install
 1. Make sure `python3-gi` and `xdotool` is present an your system.
@@ -24,6 +23,11 @@ Define a key sequence for the command ( i took `Super+F1`)
 
 ## Credits
 This application uses the [emojione](http://emojione.com) artwork from Rick Moby.
+
+## Known Issues
+* The App simulates [`ctrl+shift+u`](https://en.wikipedia.org/wiki/Unicode_input#In_X11_.28Linux_and_other_Unix_variants.29) keystrokes to input unicode characters, which may only work with GTK+.
+* The unicode mode (run with parameter `--unicode`) which inputs the character directly migth work wit QT (testing needed)
+  * Does not work with Chromium
 
 ## Todo
 * ~~Multicharacter emoji (i.e skin tone)~~
