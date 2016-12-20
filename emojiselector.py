@@ -43,13 +43,17 @@ class EmojiSelectorBox(Gtk.Box):
 
         self.pack_start(self.filterEntry, False, True, 0)
 
-        self.categoryFilter = emojiStore.filter_new()
-        self.categoryFilter.set_visible_func(self.category_filter_func)
+        self.emojiFilter = emojiStore.filter_new()
+        self.emojiFilter.set_visible_func(self.emoji_filter_func)
 
-        emojiListView = Gtk.IconView.new_with_model(self.categoryFilter)
+        self.emojiSorter = Gtk.TreeModelSort(model=self.emojiFilter)
+        # self.emojiSorter.set_default_sort_func(self.emoji_sort_func, None)
+        self.emojiSorter.set_sort_func(1, self.emoji_sort_func, None)
+
+        emojiListView = Gtk.IconView.new_with_model(self.emojiSorter)
         emojiListView.set_pixbuf_column(2)
         emojiListView.set_selection_mode(Gtk.SelectionMode.BROWSE)
-        for i, value in enumerate(self.categoryFilter):
+        for i, value in enumerate(self.emojiFilter):
             if value[0] == preselect:
                 emojiListView.select_path(Gtk.TreePath.new_from_indices([i]))
                 emojiListView.scroll_to_path(Gtk.TreePath.new_from_indices([i]), True, 0.5, 0.5)
@@ -67,23 +71,54 @@ class EmojiSelectorBox(Gtk.Box):
         else:
             if category in self.selectedCategorys:
                 self.selectedCategorys.remove(category)
-        self.categoryFilter.refilter()
+        self.emojiFilter.refilter()
+        self.emojiSorter.set_model(self.emojiFilter)
+        self.emojiSorter.set_sort_column_id(-1, 0)
+        self.emojiSorter.set_sort_column_id(1, 0)
+        # self.emojiSorter.reorder()
         # print(self.selectedCategorys)
 
     def on_filter_entry_changed(self, widget):
-        # print(self.filterEntry.get_text().split(' '))
-        self.categoryFilter.refilter()
+        print(self.filterEntry.get_text().split(' '))
+        self.emojiFilter.refilter()
+        self.emojiSorter.set_sort_column_id(-1, 0)
+        self.emojiSorter.set_sort_column_id(1, 0)
 
-    def category_filter_func(self, model, iter, data):
+    def emoji_filter_func(self, model, iter, data):
         textMatch = True
         for s in self.filterEntry.get_text().split(' '):
             s = re.sub(r'(\\)$', '', s)
-            textMatch = textMatch and re.findall('\\b' + s, model[iter][1], re.IGNORECASE)
+            # textMatch = textMatch and re.findall('\\b' + s, model[iter][1], re.IGNORECASE)
+            # textMatch = textMatch and re.findall('\\b.{0,3}' + s + '|' + s + '.{0,3}\\b', model[iter][1], re.IGNORECASE)
+            textMatch = textMatch and re.findall(s, model[iter][1], re.IGNORECASE)
         return (True if len(self.selectedCategorys) == 0 else model[iter][3] in self.selectedCategorys) and textMatch
+
+    # Score function to sort the searchresults
+    def emoji_sort_func(self, model, a, b, user):
+        score_a = 0
+        score_b = 0
+        if self.filterEntry.get_text() != '':
+            for s in self.filterEntry.get_text().split(' '):
+                s = re.sub(r'(\\)$', '', s)
+                matches = re.findall('\\b\\S*?' + s + '\\S*?\\b', model[a][1], re.IGNORECASE)
+                for m in matches:
+                    start = m.find(s)
+                    end = len(m) - len(s) - start
+                    score_a += start + end
+                score_a /= len(matches)
+                matches = re.findall('\\b\\S*?' + s + '\\S*?\\b', model[b][1], re.IGNORECASE)
+                for m in matches:
+                    start = m.find(s)
+                    end = len(m) - len(s) - start
+                    score_b += start + end
+                score_b /= len(matches)
+            return score_a - score_b
+        else:
+            return 0
 
     def on_emoji_icon_selected(self, widget):
         if len(widget.get_selected_items()) == 1:
-            sel = self.categoryFilter[widget.get_selected_items()[0].get_indices()[0]]
+            sel = self.emojiSorter[widget.get_selected_items()[0].get_indices()[0]]
             if self.selectedEmoji != sel[0]:
                 self.selectedEmoji = sel[0]
                 print('Selected Emoji: {}; {}'.format(self.selectedEmoji, sel[1]))
