@@ -100,7 +100,15 @@ class EmojiSelectorDlg(Gtk.Dialog):
 
         box = self.get_content_area()
         box.pack_start(self.emojiBox, True, True, 2)
+
+        self.connect('key-press-event', self.on_key_pressed)
+
         self.show_all()
+
+    def on_key_pressed(self, widget, event):
+        # print(event.keyval)
+        if event.keyval == 0xff0d:
+            self.response(Gtk.ResponseType.OK)
 
 
 if __name__ == '__main__':

@@ -31,8 +31,8 @@ This application uses the [emojione](http://emojione.com) artwork from Rick Moby
 * Improve UI
   * ~~Set focus to search field~~
   * Use TAB to switch through controls
-  * Use RETURN as Ok
-  * Use ESC as Cancel
+  * ~~Use RETURN as Ok~~
+  * ~~Use ESC as Cancel~~
   * Display recently used emoji
   * User defined favorites
 * Find a better way to interface with libxdo
