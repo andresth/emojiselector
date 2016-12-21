@@ -144,7 +144,7 @@ class EmojiSelectorDlg(Gtk.Dialog):
         box.pack_start(self.emojiBox, True, True, 2)
 
         self.connect('key-press-event', self.on_key_pressed)
-
+        self.set_icon_from_file(os.path.join(modulePath, './assets/icon.png'))
         self.show_all()
 
     def on_key_pressed(self, widget, event):
@@ -158,10 +158,10 @@ if __name__ == '__main__':
     parser.add_argument('--unicode', dest='unicode', action='store_true', default=False)
     args = parser.parse_args()
     focusedWindow = check_output(['xdotool', 'getwindowfocus']).decode().strip()
-    win = EmojiSelectorDlg(None, preselect=None)
-    # win.connect("delete-event", Gtk.main_quit)
-    result = win.run()
-    keyToSend = win.emojiBox.selectedEmoji
+    dlg = EmojiSelectorDlg(None, preselect=None)
+    result = dlg.run()
+    keyToSend = dlg.emojiBox.selectedEmoji
+    dlg.destroy()
     if result == Gtk.ResponseType.OK and keyToSend != None:
         for k in keyToSend:
             run(['xdotool', 'windowfocus', focusedWindow])
