@@ -1,5 +1,7 @@
 # Emoji Selector
 
+![Screenshot](assets/screenshot.png)
+
 ## Goal
 The intention is to provide an easy way to input emoji into any text entry field.
 
