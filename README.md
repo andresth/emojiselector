@@ -15,11 +15,11 @@ sudo apt install python3-gi xdotool
 ```
 2. git clone this repository
 ```
-git clone something
+git clone https://github.com/andresth/emojiselector.git
 ```
 3. Add a keyboard shortcut.  
 Goto `Systemsettings` > `Keyboard` > `Shortcuts` and press the `+` sign.  
-Give the shortcut a name and insert this command: `bash -c 'cd /path/to/repository && /usr/bin/python3 ./emojiselector.py'` (reolace /path/to/repository with the real path on your system).  
+Give the shortcut a name and insert this command: `bash -c 'cd /path/to/repository && /usr/bin/python3 ./emojiselector.py'` (replace /path/to/repository with the real path on your system).  
 Define a key sequence for the command ( i took `Super+F1`)
 4. Enjoy 😎
 
