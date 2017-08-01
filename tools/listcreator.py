@@ -3,8 +3,13 @@
 
 import json
 import os.path
+import requests
 from html.parser import HTMLParser
 from argparse import ArgumentParser
+
+
+emojiListURL =  'http://unicode.org/emoji/charts/full-emoji-list.html'
+
 
 class EmojiParser(HTMLParser):
     def __init__(self, imgPath):
@@ -19,7 +24,6 @@ class EmojiParser(HTMLParser):
 
     def handle_starttag (self, tag, attrs):
         if tag == 'th' and ('class', 'bighead') in attrs:
-            print('Found Category...')
             self.nextData = 'category'
         elif tag == 'td' and ('class', 'code') in attrs:
             self.nextData = 'code'
@@ -29,7 +33,7 @@ class EmojiParser(HTMLParser):
 
     def handle_data(self, data):
         if self.nextData == 'category':
-            print('Enter Category: {}'.format(data))
+            print('Reading Category: {}'.format(data))
             self.Categories.append([data, [data.split()[0].lower()]])
             self.nextData = None
         elif self.nextData == 'code':
@@ -58,16 +62,23 @@ class EmojiParser(HTMLParser):
         return
 
 parser = ArgumentParser(description='Configure the SmartKey.')
-parser.add_argument('--img-path', dest='imgPath', required=True)
-parser.add_argument('--html-file', dest='htmlFile', required=True)
-# parser.add_argument('--category', dest='category', action='store_true')
-# parser.add_argument('--emoji', dest='emoji', action='store_true')
+parser.add_argument('--emojione-path', dest='imgPath', required=True)
+parser.add_argument('--full-emoji-list', dest='emojiList')
 args = parser.parse_args()
 
-htmlData = open(args.htmlFile, 'r').read()
-# print(htmlData)
+htmlData = None
+
+if args.emojiList:
+    print('Loading Emoji List from \'{}\''.format(args.htmlFile))
+    htmlData = open(args.htmlFile, 'r').read()
+else:
+    print('Loading Emoji List from \'{}\''.format(emojiListURL))
+    htmlData = requests.get(emojiListURL, timeout=30).content.decode('utf-8')
+
 emojiParser = EmojiParser(args.imgPath)
 emojiParser.feed(htmlData)
+
+print('Found {} Emojis in {} Categories.'.format(len(emojiParser.Emojis), len(emojiParser.Categories)))
 
 allCat = []
 for cat in emojiParser.Categories:
@@ -75,33 +86,3 @@ for cat in emojiParser.Categories:
 emojiParser.Categories.insert(0, ['All', allCat])
 json.dump(emojiParser.Categories, open('category.json', 'w'), indent=2)
 json.dump(emojiParser.Emojis, open('emoji.json', 'w'), indent=2)
-
-# inList = sorted(json.load(sys.stdin).values(), key=lambda k: int(k['emoji_order']))
-#
-# # for k in inList:
-# #     print(k['emoji_order'])
-# outList = []
-#
-# for value in inList:
-#     if value['category'] != 'modifier':
-#         if args.emoji:
-#             keyCode = []
-#             for code in value['unicode'].split('-'):
-#                 keyCode.append(int('0x{}'.format(code), base=16))
-#             # keyCode = '0x{}'.format(value['unicode'])
-#             print(type(keyCode))
-#             keywords = (value['name'] + ' ' + ' '.join(value['keywords']).strip()).strip()
-#             if 0x1f596 in keyCode:
-#                 keywords += ' vulcan spock'
-#             elif 0x1f923 in keyCode:
-#                 keywords += ' rofl'
-#             elif 0x2615 in keyCode:
-#                 keywords += ' coffee'
-#             filename = './png/{}.png'.format(value['unicode'])
-#             category = value['category']
-#             outList.append([keyCode, keywords, filename, category])
-#         elif args.category:
-#             if not value['category'] in outList:
-#                 outList.append(value['category'])
-#
-# json.dump(outList, sys.stdout, indent=2)
