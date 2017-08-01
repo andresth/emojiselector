@@ -2,27 +2,26 @@
   [
     "All",
     [
-      "people",
-      "objects",
-      "activity",
-      "nature",
-      "travel",
-      "symbols",
+      "smileys",
+      "animals",
       "food",
-      "flags",
-      "regional"
+      "travel",
+      "activities",
+      "objects",
+      "symbols",
+      "flags"
     ]
   ],
   [
     "Smileys & People",
     [
-      "people"
+      "smileys"
     ]
   ],
   [
     "Animals & Nature",
     [
-      "nature"
+      "animals"
     ]
   ],
   [
@@ -32,15 +31,15 @@
     ]
   ],
   [
-    "Activity",
-    [
-      "activity"
-    ]
-  ],
-  [
     "Travel & Places",
     [
       "travel"
+    ]
+  ],
+  [
+    "Activities",
+    [
+      "activities"
     ]
   ],
   [
@@ -59,12 +58,6 @@
     "Flags",
     [
       "flags"
-    ]
-  ],
-  [
-    "Regional",
-    [
-      "regional"
     ]
   ]
 ]
